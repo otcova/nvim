@@ -3,6 +3,10 @@
 --
 -- See the kickstart.nvim README for more information
 
+----- Open Terminal -----
+vim.keymap.set('n', '<c-w>t', ':NvimTreeFocus<Enter><c-w>s:term<Enter><c-w>40|i', { desc = '[T]erminal' })
+vim.keymap.set('n', '<leader>T', ':NvimTreeFocus<Enter><c-w>j', { desc = '[T]erminal' })
+
 ----- (C / C++) Goto Header File -----
 vim.keymap.set('n', 'gh', function()
   local extensions = {
