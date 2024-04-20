@@ -4,7 +4,7 @@
 -- See the kickstart.nvim README for more information
 
 ----- Open Terminal -----
-vim.keymap.set('n', '<c-w>t', ':NvimTreeFocus<Enter><c-w>s:term<Enter><c-w>40|i', { desc = '[T]erminal' })
+vim.keymap.set('n', '<c-w>t', ':NvimTreeFocus<Enter><c-w>s:term<Enter>i', { desc = '[T]erminal' })
 vim.keymap.set('n', '<leader>T', ':NvimTreeFocus<Enter><c-w>j', { desc = '[T]erminal' })
 
 ----- (C / C++) Goto Header File -----
@@ -177,6 +177,9 @@ return {
     event = 'VeryLazy',
     config = function()
       require('nvim-tree').setup { on_attach = my_on_attach, git = { enable = false } }
+
+      local actions = require 'nvim-tree.actions.node.open-file'
+      actions.resize_window = false
 
       local api = require 'nvim-tree.api'
       vim.keymap.set('n', '<leader>t', function()
