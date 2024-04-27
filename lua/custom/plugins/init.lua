@@ -5,7 +5,9 @@
 
 ----- Open Terminal -----
 vim.keymap.set('n', '<c-w>t', ':NvimTreeFocus<Enter><c-w>s:term<Enter>i', { desc = '[T]erminal' })
-vim.keymap.set('n', '<leader>T', ':NvimTreeFocus<Enter><c-w>j', { desc = '[T]erminal' })
+local focus_term = '<Esc>:NvimTreeFocus<Enter><c-w>ji'
+vim.keymap.set('n', '<leader>t', focus_term, { desc = '[T]erminal' })
+vim.keymap.set({ 'n', 'v' }, '<leader>@', focus_term .. '<Up><CR>', { desc = 'Run last [T]erminal cmd' })
 
 ----- (C / C++) Goto Header File -----
 vim.keymap.set('n', 'gh', function()
@@ -43,11 +45,11 @@ vim.keymap.set('n', '<c-s>', ':wa<Enter>', { desc = '[S]ave all' })
 vim.keymap.set('i', '<c-s>', '<Esc>:wa<Enter>', { desc = '[S]ave all' })
 
 ----- Substitute / Replace -----
-vim.keymap.set('n', '<leader>S', ':%s/\\v/g<left><left>', { desc = '[S]ubstiute' })
-vim.keymap.set('v', '<leader>S', ':s/\\v/g<left><left>', { desc = '[S]ubstiute' })
+vim.keymap.set('n', '<leader>rs', ':%s//g<left><left>', { desc = '[S]ubstiute' })
+vim.keymap.set('v', '<leader>rs', ':s//g<left><left>', { desc = '[S]ubstiute inside selection' })
 
-vim.keymap.set('n', '<leader>R', ':%s/<c-r><c-w>//g<left><left>', { desc = '[R]eplace word' })
-vim.keymap.set('v', '<leader>R', 'y:%s/<c-r>0//g<left><left>', { desc = '[R]eplace selection' })
+vim.keymap.set('n', '<leader>rr', ':%s/<c-r><c-w>//g<left><left>', { desc = '[R]eplace word' })
+vim.keymap.set('v', '<leader>rr', 'y:%s/<c-r>0//g<left><left>', { desc = '[R]eplace selection' })
 
 ----- Window Shortcuts -----
 vim.keymap.set('n', '_', '<c-w>_')
@@ -119,7 +121,8 @@ local function my_on_attach(bufnr)
   -- vim.keymap.set('n', '<C-x>', api.node.open.horizontal, opts 'Open: Horizontal Split')
   vim.keymap.set('n', '<C-h>', api.node.open.horizontal, opts 'Open: Horizontal Split')
   vim.keymap.set('n', '<BS>', api.node.navigate.parent_close, opts 'Close Directory')
-  vim.keymap.set('n', '<CR>', api.node.open.edit, opts 'Open')
+  -- vim.keymap.set('n', '<CR>', api.node.open.edit, opts 'Open')
+  vim.keymap.set('n', '<CR>', api.node.open.no_window_picker, opts 'Open: No Window Picker')
   vim.keymap.set('n', '<Tab>', api.node.open.preview, opts 'Open Preview')
   vim.keymap.set('n', '>', api.node.navigate.sibling.next, opts 'Next Sibling')
   vim.keymap.set('n', '<', api.node.navigate.sibling.prev, opts 'Previous Sibling')
@@ -152,7 +155,13 @@ local function my_on_attach(bufnr)
   vim.keymap.set('n', 'M', api.tree.toggle_no_bookmark_filter, opts 'Toggle Filter: No Bookmark')
   vim.keymap.set('n', 'm', api.marks.toggle, opts 'Toggle Bookmark')
   vim.keymap.set('n', 'o', api.node.open.edit, opts 'Open')
-  vim.keymap.set('n', 'O', api.node.open.no_window_picker, opts 'Open: No Window Picker')
+  -- vim.keymap.set('n', 'O', api.node.open.no_window_picker, opts 'Open: No Window Picker')
+  vim.keymap.set('n', 'O', function()
+    local actions = require 'nvim-tree.actions.node.open-file'
+    actions.resize_window = true
+    api.node.open.edit()
+    actions.resize_window = false
+  end, opts 'Open and resize')
   vim.keymap.set('n', 'p', api.fs.paste, opts 'Paste')
   vim.keymap.set('n', 'P', api.node.navigate.parent, opts 'Parent Directory')
   vim.keymap.set('n', 'q', api.tree.close, opts 'Close')
@@ -176,15 +185,19 @@ return {
     'nvim-tree/nvim-tree.lua',
     event = 'VeryLazy',
     config = function()
-      require('nvim-tree').setup { on_attach = my_on_attach, git = { enable = false } }
+      require('nvim-tree').setup {
+        on_attach = my_on_attach,
+        git = { enable = false },
+        view = { width = 40 },
+      }
 
       local actions = require 'nvim-tree.actions.node.open-file'
       actions.resize_window = false
 
       local api = require 'nvim-tree.api'
-      vim.keymap.set('n', '<leader>t', function()
+      vim.keymap.set('n', '<leader>f', function()
         api.tree.open { find_file = true }
-      end, { desc = '[T]ree File Explorer' })
+      end, { desc = '[F]ile Tree Explorer' })
     end,
   },
 }
