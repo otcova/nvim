@@ -3,11 +3,24 @@
 --
 -- See the kickstart.nvim README for more information
 
+----- Move on terminal -----
+vim.keymap.set('t', '<c-w>', '<c-\\><c-n><c-w>')
+
+----- Signcolumn ----- Show Git Icons -----
+vim.keymap.set('n', '<leader>g', function()
+  if vim.opt.signcolumn:get() == 'no' then
+    local has_num_col = vim.opt.number:get() or vim.opt.relativenumber:get()
+    vim.opt.signcolumn = has_num_col and 'number' or 'yes'
+  else
+    vim.opt.signcolumn = 'no'
+  end
+end, { desc = '[G]it signcolumn' })
+
 ----- Open Terminal -----
 vim.keymap.set('n', '<c-w>t', ':NvimTreeFocus<Enter><c-w>s:term<Enter>i', { desc = '[T]erminal' })
-local focus_term = '<Esc>:NvimTreeFocus<Enter><c-w>ji'
+local focus_term = '<Esc>:wa<CR>:NvimTreeFocus<Enter><c-w>ji'
 vim.keymap.set('n', '<leader>t', focus_term, { desc = '[T]erminal' })
-vim.keymap.set({ 'n', 'v' }, '<leader>@', focus_term .. '<Up><CR>', { desc = 'Run last [T]erminal cmd' })
+vim.keymap.set({ 'n', 'v' }, '<leader>@', focus_term .. '<Up><CR><c-\\><c-n><c-w>l', { desc = 'Run last [T]erminal cmd' })
 
 ----- (C / C++) Goto Header File -----
 vim.keymap.set('n', 'gh', function()
@@ -55,9 +68,6 @@ vim.keymap.set('v', '<leader>rr', 'y:%s/<c-r>0//g<left><left>', { desc = '[R]epl
 vim.keymap.set('n', '_', '<c-w>_')
 vim.keymap.set('n', '|', '<c-w>|')
 
------ Close Buffer -----
-vim.keymap.set('n', '<leader>W', ':b# | bw#<Enter>', { desc = '[W]ipeout buffer' })
-
 ----- Show Error before warning -----
 vim.diagnostic.config { severity_sort = true }
 
@@ -67,21 +77,11 @@ vim.diagnostic.config { virtual_text = {
 } }
 
 ----- Swap Previous Buffer -----
--- vim.keymap.set('n', 'gp', ':b#<Enter>', { desc = '[P]revious Buffer' })
-vim.keymap.set('n', 'gp', ':e#<Enter>', { desc = '[P]revious Buffer' })
--- vim.keymap.set('n', 'gp', function()
---   for i, buf in ipairs(vim.v.oldfiles) do
---     if i > 10 then
---       return
---     end
---
---     if vim.fn.filereadable(buf) and buf:sub(#buf - 9, #buf - 1) ~= 'NvimTree_' then
---       print(buf)
---       --vim.cmd.edit(buf)
---       return
---     end
---   end
--- end, { desc = '[P]revious Buffer' })
+local swap_buffer = ":<c-u>exe v:count ? v:count . 'b' : 'b' . (bufloaded(0) ? '#' : 'n')"
+vim.keymap.set('n', '<c-p>', swap_buffer .. '<cr>', { desc = '[P]revious Buffer', silent = true })
+
+----- Close Buffer -----
+vim.keymap.set('n', '<leader>W', swap_buffer .. ' | bw#<cr>', { desc = '[W]ipeout buffer', silent = true })
 
 ----- Paste Without Copy -----
 vim.keymap.set('v', '<leader>p', '"_dP', { desc = '[P]aste after without copy' })
@@ -110,18 +110,14 @@ local function my_on_attach(bufnr)
     return { desc = desc, buffer = bufnr, noremap = true, silent = true, nowait = true }
   end
 
-  -- BEGIN_DEFAULT_ON_ATTACH
-  --vim.keymap.set('n', '<C-]>', api.tree.change_root_to_node, opts 'CD')
   vim.keymap.set('n', '<C-c>', api.tree.change_root_to_node, opts 'CD')
   vim.keymap.set('n', '<C-e>', api.node.open.replace_tree_buffer, opts 'Open: In Place')
   vim.keymap.set('n', '<C-k>', api.node.show_info_popup, opts 'Info')
   vim.keymap.set('n', '<C-r>', api.fs.rename_sub, opts 'Rename: Omit Filename')
   vim.keymap.set('n', '<C-t>', api.node.open.tab, opts 'Open: New Tab')
   vim.keymap.set('n', '<C-v>', api.node.open.vertical, opts 'Open: Vertical Split')
-  -- vim.keymap.set('n', '<C-x>', api.node.open.horizontal, opts 'Open: Horizontal Split')
   vim.keymap.set('n', '<C-h>', api.node.open.horizontal, opts 'Open: Horizontal Split')
   vim.keymap.set('n', '<BS>', api.node.navigate.parent_close, opts 'Close Directory')
-  -- vim.keymap.set('n', '<CR>', api.node.open.edit, opts 'Open')
   vim.keymap.set('n', '<CR>', api.node.open.no_window_picker, opts 'Open: No Window Picker')
   vim.keymap.set('n', '<Tab>', api.node.open.preview, opts 'Open Preview')
   vim.keymap.set('n', '>', api.node.navigate.sibling.next, opts 'Next Sibling')
@@ -155,7 +151,6 @@ local function my_on_attach(bufnr)
   vim.keymap.set('n', 'M', api.tree.toggle_no_bookmark_filter, opts 'Toggle Filter: No Bookmark')
   vim.keymap.set('n', 'm', api.marks.toggle, opts 'Toggle Bookmark')
   vim.keymap.set('n', 'o', api.node.open.edit, opts 'Open')
-  -- vim.keymap.set('n', 'O', api.node.open.no_window_picker, opts 'Open: No Window Picker')
   vim.keymap.set('n', 'O', function()
     local actions = require 'nvim-tree.actions.node.open-file'
     actions.resize_window = true
@@ -177,7 +172,6 @@ local function my_on_attach(bufnr)
   vim.keymap.set('n', 'Y', api.fs.copy.relative_path, opts 'Copy Relative Path')
   vim.keymap.set('n', '<2-LeftMouse>', api.node.open.edit, opts 'Open')
   vim.keymap.set('n', '<2-RightMouse>', api.tree.change_root_to_node, opts 'CD')
-  -- END_DEFAULT_ON_ATTACH
 end
 
 return {
@@ -187,8 +181,26 @@ return {
     config = function()
       require('nvim-tree').setup {
         on_attach = my_on_attach,
-        git = { enable = false },
-        view = { width = 40 },
+        renderer = {
+          icons = {
+            git_placement = 'signcolumn',
+            glyphs = {
+              git = {
+                unstaged = '✗',
+                staged = '✓',
+                unmerged = '',
+                renamed = '➜',
+                untracked = '★',
+                deleted = '',
+                ignored = '◌',
+              },
+            },
+          },
+        },
+        view = {
+          width = 40,
+          signcolumn = 'no',
+        },
       }
 
       local actions = require 'nvim-tree.actions.node.open-file'
