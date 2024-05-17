@@ -90,8 +90,8 @@ vim.keymap.set('i', '<c-s>', '<Esc>:wa<Enter>', { desc = '[S]ave all' })
 vim.keymap.set('n', '<leader>rs', ':%s//g<left><left>', { desc = '[S]ubstiute' })
 vim.keymap.set('v', '<leader>rs', ':s//g<left><left>', { desc = '[S]ubstiute inside selection' })
 
-vim.keymap.set('n', '<leader>rr', ':%s/<c-r><c-w>//g<left><left>', { desc = '[R]eplace word' })
-vim.keymap.set('v', '<leader>rr', 'y:%s/<c-r>0//g<left><left>', { desc = '[R]eplace selection' })
+vim.keymap.set('n', '<leader>rw', ':%s/<c-r><c-w>//g<left><left>', { desc = '[R]eplace [W]ord' })
+vim.keymap.set('v', '<leader>rw', 'y:%s/<c-r>0//g<left><left>', { desc = '[R]eplace selection' })
 
 ----- Window Shortcuts -----
 vim.keymap.set('n', '_', '<c-w>_')
@@ -111,10 +111,6 @@ vim.keymap.set('n', '<c-p>', swap_buffer .. '<cr>', { desc = '[P]revious Buffer'
 
 ----- Close Buffer -----
 vim.keymap.set('n', '<leader>W', swap_buffer .. ' | bw#<cr>', { desc = '[W]ipeout buffer', silent = true })
-
------ Paste Without Copy -----
-vim.keymap.set('v', '<leader>p', '"_dP', { desc = '[P]aste after without copy' })
-vim.keymap.set('v', '<leader>P', '"_dP', { desc = '[P]aste before without copy' })
 
 ----- Window Navigation -----
 vim.keymap.set('t', '<c-w>', '<c-\\><c-n><c-w>')
@@ -302,7 +298,9 @@ require('lazy').setup {
       --  Check out: https://github.com/echasnovski/mini.nvim
     end,
   },
-
+  {
+    'mg979/vim-visual-multi',
+  },
   ----- Code Highlight -----
   { -- Highlight, edit, and navigate code
     'nvim-treesitter/nvim-treesitter',
