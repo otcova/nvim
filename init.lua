@@ -51,7 +51,7 @@ vim.opt.inccommand = 'split'
 vim.opt.cursorline = true
 
 -- Minimal number of screen lines to keep above and below the cursor.
-vim.opt.scrolloff = 8
+vim.opt.scrolloff = 12
 
 -- Set highlight on search, but clear on pressing <Esc> in normal mode
 vim.opt.hlsearch = true
@@ -238,7 +238,7 @@ require('lazy').setup {
     end,
   },
 
-  ----- Coloshceme -----
+  ----- Colorscheme -----
   {
     -- If you want to see what colorschemes are already installed, you can use `:Telescope colorscheme`
     'folke/tokyonight.nvim',
@@ -250,6 +250,9 @@ require('lazy').setup {
 
       -- You can configure highlights by doing something like
       vim.cmd.hi 'Comment gui=none guifg=#6b79b3'
+      vim.cmd.hi 'CursorLineNr gui=none guifg=#3b4261'
+      vim.cmd.hi 'LineNrAbove gui=none guifg=#737aa2'
+      vim.cmd.hi 'LineNrBelow gui=none guifg=#737aa2'
     end,
   },
 
@@ -298,9 +301,14 @@ require('lazy').setup {
       --  Check out: https://github.com/echasnovski/mini.nvim
     end,
   },
-  {
+  { --- Multi cursors
     'mg979/vim-visual-multi',
   },
+  -- { --- Motion Tutor
+  --   'm4xshen/hardtime.nvim',
+  --   dependencies = { 'MunifTanjim/nui.nvim', 'nvim-lua/plenary.nvim' },
+  --   opts = {},
+  -- },
   ----- Code Highlight -----
   { -- Highlight, edit, and navigate code
     'nvim-treesitter/nvim-treesitter',
@@ -616,7 +624,13 @@ require('lazy').setup {
 
           -- Rename the variable under your cursor
           --  Most Language Servers support renaming across files, etc.
-          map('<leader>rn', vim.lsp.buf.rename, '[R]e[n]ame')
+          map('<leader>rn', function()
+            vim.ui.input({ prompt = 'New Name: ' }, function(input)
+              if input then
+                vim.lsp.buf.rename(input)
+              end
+            end)
+          end, '[R]e[n]ame')
 
           -- Execute a code action, usually your cursor needs to be on top of an error
           -- or a suggestion from your LSP for this to activate.
@@ -804,6 +818,7 @@ require('lazy').setup {
           end,
         },
         completion = { completeopt = 'menu,menuone,noinsert' },
+        preselect = 'none',
 
         -- For an understanding of why these mappings were
         -- chosen, you will need to read `:help ins-completion`
